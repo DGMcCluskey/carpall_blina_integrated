@@ -1,0 +1,26 @@
+---
+title: "Untitled"
+format: html
+---
+
+
+```{python}
+import scanpy as sc
+import numpy as np
+import anndata as ad
+import pandas as pd
+import os
+```
+
+```{python}
+carpall_meta = pd.read_csv("/Users/rmhadgm/OneDrive - University College London/Ghorashian_group/carpall_blina_integrated/carpall_metadata_organised.csv")
+```
+
+# get list of file names of the carpall samples and then only keep samples that are in paper metadata, don't weren't in the pilot study (which is presumably why they are cellranger 302 rather than 500) and aren't a vdj sampleß
+```{python}
+file_names = os.listdir("/Volumes/ritd-ag-project-rd01k9-tacco78/scRNAseq data - CARPALL/")
+gex_ids = carpall_meta["GEX_id"].astype(str)
+file_names = [f for f in file_names if any(gid in f for gid in gex_ids)]
+file_names = [f for f in file_names if "cellranger302" not in f]
+file_names = [f for f in file_names if "vdj" not in f]
+```

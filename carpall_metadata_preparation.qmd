@@ -1,0 +1,44 @@
+---
+title: "Untitled"
+format: html
+---
+
+---
+title: "Untitled"
+format: html
+---
+
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(readxl)
+```
+
+```{r}
+paper_meta <- read_xlsx("/Users/rmhadgm/OneDrive - University College London/Ghorashian_group/CARPALL_scRNAseq/metadata_from_paper.xlsx", skip = 2)
+paper_meta <- paper_meta[1:73, 1:7]
+paper_meta <- as.data.frame(paper_meta)
+paper_meta <- filter(paper_meta, !Sort %in% "NA")
+names(paper_meta)[6] <- "GEX_id"
+names(paper_meta)[7] <- "TCR_id"
+names(paper_meta)[3] <- "Timepoint_bin"
+```
+
+```{r}
+paper_meta  <- paper_meta %>%
+  separate_longer_delim(
+    c(Sort, GEX_id, TCR_id),
+    delim = ","
+  ) %>%
+  mutate(
+    across(
+      c(Sort, GEX_id, TCR_id),
+      trimws
+    )
+  )
+```
+
+```{r}
+write.csv(paper_meta, file = "carpall_metadata_organised.csv")
+```
