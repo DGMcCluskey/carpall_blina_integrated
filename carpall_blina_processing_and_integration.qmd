@@ -12,8 +12,10 @@ import pandas as pd
 import os
 ```
 
+# load in carpall meta
 ```{python}
 carpall_meta = pd.read_csv("/Users/rmhadgm/OneDrive - University College London/Ghorashian_group/carpall_blina_integrated/carpall_metadata_organised.csv")
+carpall_meta = carpall_meta.drop(columns=["Unnamed: 0"])
 ```
 
 # get list of file names of the carpall samples and then only keep samples that are in paper metadata, don't weren't in the pilot study (which is presumably why they are cellranger 302 rather than 500) and aren't a vdj sampleß
@@ -25,6 +27,7 @@ file_names = [f for f in file_names if "cellranger302" not in f]
 file_names = [f for f in file_names if "vdj" not in f]
 ```
 
+# load in carpall data, mkaing sure to give cell ids unique names
 ```{python}
 adatas = []
 
@@ -39,6 +42,35 @@ for folder in file_names:
     adatas.append(adata)
 ```
 
+# combine into one adata
 ```{python}
 carpall = sc.concat(adatas, label="file_id", keys=[os.path.basename(f) for f in file_names])
+```
+
+# make a carpall column to can distinguish/batch correct easily down the line
+```{python}
+carpall.obs["study"] = "carpall"
+```
+
+# make a new column pulling out the sample id from the file name, this will be used to allow the metadata to be merged
+```{python}
+carpall.obs["GEX_id"] = (
+    carpall.obs["file_id"]
+    .str.extract(r"(CAR-T\d+)")
+)
+carpall.obs
+```
+
+```{python}
+carpall.obs = (
+    carpall.obs
+    .reset_index()
+    .merge(carpall_meta, on="GEX_id", how="left")
+    .set_index("index")
+)
+carpall.obs
+```
+
+```{python}
+
 ```
