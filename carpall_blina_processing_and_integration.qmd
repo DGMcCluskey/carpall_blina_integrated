@@ -132,3 +132,7 @@ carpall_blina = sc.concat(
 )
 carpall_blina
 ```
+
+```{python}
+carpall_blina.write("1_carpall_blina_pre_qc.h5ad")
+```

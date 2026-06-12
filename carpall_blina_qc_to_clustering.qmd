@@ -1,0 +1,54 @@
+---
+title: "Untitled"
+format: html
+---
+
+
+```{python}
+import scanpy as sc
+import numpy as np
+import anndata as ad
+import pandas as pd
+import os
+import seaborn as sns
+import matplotlib.pyplot as plt
+```
+
+```{python}
+carpall_blina = sc.read("1_carpall_blina_pre_qc.h5ad")
+```
+
+# identify mito, ribo and hb genes
+```{python}
+carpall_blina.var["mt"] = carpall_blina.var_names.str.startswith("MT-")
+carpall_blina.var["ribo"] = carpall_blina.var_names.str.startswith(("RPS", "RPL"))
+carpall_blina.var["hb"] = carpall_blina.var_names.str.contains(r"^HB[ABDEGMQZ]\d*(?!\w)")
+```
+
+```{python}
+sc.pp.calculate_qc_metrics(
+    carpall_blina, qc_vars=["mt", "ribo", "hb"], inplace=True, percent_top=[20], log1p=True
+)
+carpall_blina
+```
+
+```{python}
+axes = sc.pl.violin(
+    carpall_blina,
+    ["pct_counts_mt", "pct_counts_ribo", "pct_counts_hb"],
+    groupby="study",
+    stripplot=False,
+    show=False
+)
+
+for ax in axes:
+    ax.grid(False)
+
+fig = axes[0].get_figure()
+
+fig.set_size_inches(7, 3)
+fig.subplots_adjust(wspace=0.6)
+
+fig.savefig("pre_qc_violins.png", dpi=300, bbox_inches="tight")
+plt.close(fig)
+```
